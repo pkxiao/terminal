@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>terminal</title>
+    <style>
+        html, body, div{
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+    </style>
+    <link rel="shortcut icon" type="image/x-icon" href="icon/fvaicon.ico">
+    <link rel="stylesheet" href="https://unpkg.com/xterm@3.14.5/dist/xterm.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/layer/2.3/layer.js"></script>
+    <script src="https://unpkg.com/xterm@3.14.5/dist/xterm.js"></script>
+    <script src="https://unpkg.com/xterm@3.14.5/dist/addons/fit/fit.js"></script>
+</head>
+<body>
+<div id="terminal"></div>
+<script type="text/javascript">
+    Terminal.applyAddon(fit);
+    let socket = null;
+    let term = null;
+    let sid;
+    function close_term() {
+        socket.emit("close", {sid: sid});
+        socket.disconnect();
+        term.dispose();
+    }
+    function my_resize() {
+        term.fit();
+        socket.emit("resize", {cols: term.cols, rows: term.rows, sid: sid});
+    }
+    socket = io.connect(location.protocol + "//" + document.domain + ":" + location.port + "/terminal", {path: "/share/socket.io"});
+    socket.on("login", function (data) {
+        if (data.code === 0) {
+            sid = data.sid;
+            term = new Terminal({});
+            term.open(document.getElementById("terminal"));
+            my_resize();
+            term.on("data", (input, e) => {
+                socket.emit("input", {input: input, sid: sid})
+            });
+            socket.emit("grs", {sid: sid});
+            socket.on("result", (data) => {
+                console.log(data);
+                term.write(data.result)
+            });
+            socket.on("exit", (data)=>{
+                close_term();
+                window.close()
+            })
+
+        } else {
+            close_term()
+        }
+
+    });
+    window.onresize = ()=>{
+        my_resize()
+    };
+    window.onbeforeunload = ()=>{
+        close_term()
+    };
+
+</script>
+</body>
+</html>

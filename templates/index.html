@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" style="">
+<head>
+    <meta charset="UTF-8">
+    <title>导航页</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../static/icon/fvaicon.ico">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/layer/2.3/layer.js"></script>
+    <style>
+        html{
+            background: url(../static/image/backimage.png)no-repeat center center fixed;
+            background-size: cover;
+        }
+        input {
+            width: 250px;
+            height: 80px;
+            color: white;
+            font-weight: bold;
+            font-size: 35px;
+            border-radius: 10px;
+            outline: none;
+            background-color: black;
+        }
+
+        .inner {
+            width: 250px;
+            float: left;
+            height: 120px;
+            margin: 0 10px;
+        }
+
+        input:hover {
+            background-color: white;
+            color: black;
+        }
+
+        .outer {
+            width: 820px;
+            height: 80px;
+            margin: 200px auto;
+        }
+
+        a {
+            display: block;
+            margin-top: 10px;
+            text-decoration: none;
+            border: 1px solid white;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            border-radius: 5px;
+            background-color: black;
+        }
+
+        a:hover {
+            background-color: white;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+<div class="outer">
+    <div class="inner">
+        <input type="button" value="websocket" id="1" onclick="openwebsocket()">
+        <a href="javascript:void(0)" onclick="openurl()" style="float: left" id="https://socket.io/docs/">前端socket文档</a>
+        <a href="javascript:void(0)" onclick="openurl()" style="float: right;" id="https://flask-socketio.readthedocs.io/en/latest/">后端socket文档</a>
+    </div>
+    <div class="inner"><input type="button" value="terminal" id="2" onclick="openterminal()">
+        <a href="javascript:void(0)" onclick="openurl()" style="float: left" id="https://xtermjs.org/">前端term文档</a>
+        <a href="javascript:void(0)" onclick="openurl()" style="float: right;" id="http://www.paramiko.org/">后端paramiko文档</a>
+    </div>
+    <div class="inner"><input type="button" value="layer" id="3">
+        <a href="javascript:void(0)" onclick="openurl()" id="https://www.layui.com/doc/modules/layer.html" style="margin: 10px auto">layer文档</a>
+    </div>
+</div>
+<script>
+
+    $("#1").on({
+        mouseenter: function () {
+            ts = layer.tips("<span style=\"color: blue; font-size: 18px;\">点击打开websocket页面</span>", "#1", {
+                tips: [4, "#ddd"],
+                area: ["150px", "60px"],
+                maxWidth: 200,
+                tipsMore: false
+            })
+        },
+        mouseleave: function () {
+            layer.close(ts)
+        }
+    });
+    $("#2").on({
+        mouseenter: function () {
+            ts = layer.tips("<span style=\"color: blue; font-size: 18px;\">点击打开terminal页面</span>", "#2", {
+                tips: [1, "#ddd"],
+                area: ["150px", "60px"],
+                maxWidth: 200,
+                tipsMore: false
+            })
+        },
+        mouseleave: function () {
+            layer.close(ts)
+        }
+    });
+    $("#3").on({
+        mouseenter: function () {
+            ts = layer.tips("<span style=\"color: blue; font-size: 18px;\">点击打开layer页面</span>", "#3", {
+                tips: [2, "#ddd"],
+                area: ["150px", "60px"],
+                maxWidth: 200,
+                tipsMore: false
+            })
+        },
+        mouseleave: function () {
+            layer.close(ts)
+        }
+    });
+    openurl = ()=>{
+        layer.open({
+            title:event.srcElement.textContent,
+            type:2,
+            area:["1000px", "500px"],
+            content: event.srcElement.id
+        });
+    };
+    openwebsocket=()=>{
+        window.open("static/socket.html")
+    };
+    openterminal=()=> {
+        window.open("static/terminal.html")
+    }
+</script>
+</body>
+</html>

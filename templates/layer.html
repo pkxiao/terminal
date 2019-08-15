@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>websocket</title>
+    <style>
+        #hello {
+            opacity: 1.0;
+            filter: alpha(opacity=40);
+            width: 400px;
+            height: 300px;
+            border: 1px solid black;
+            position: relative;
+            left: 20px;
+            top: 80px;
+            margin: 40px auto;
+        }
+
+        p input {
+            float: left;
+            width: 160px;
+            height: 18px;
+        }
+
+        p {
+            padding: 0;
+            margin: 10px;
+            width: 400px;
+            height: 20px;
+            position: relative;
+            float: left;
+            font-weight: bold;
+            color: black;
+            left: 80px;
+            top: 80px;
+        }
+
+        label {
+            float: left;
+        }
+        #sub{
+            width: 400px;
+            height: 20px;
+        }
+        #sub input{
+            margin: 20px 20px;
+        }
+    </style>
+    <link rel="shortcut icon" type="image/x-icon" href="../static/icon/fvaicon.ico">
+    <link rel="stylesheet" href="https://unpkg.com/xterm@3.14.5/dist/xterm.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/layer/2.3/layer.js"></script>
+    <script src="https://unpkg.com/xterm@3.14.5/dist/xterm.js"></script>
+    <script src="https://unpkg.com/xterm@3.14.5/dist/addons/fit/fit.js"></script>
+</head>
+<body>
+<div id="hello">
+    <div style="position: relative;">
+        <div style="position: relative; height: 10px; left: 10px; top: 10px;"><span>当前活动房间号:</span><span id="idList"></span></div>
+        <p>
+            <label>房间号:</label><input id="roomid" type="text">
+        </p>
+        <p>
+            <label>姓&nbsp&nbsp&nbsp名:</label><input id="uname" type="text">
+        </p>
+    </div>
+    <div id="sub" style="position: relative; left: 95px; top: 75px">
+        <input type="button" onclick="joinroom()" value="进入房间" style="margin-right: 20px">
+        <input type="button" onclick="createroom()" value="创建房间" style="margin-left: 20px">
+    </div>
+</div>
+<script>
+    var idList = [];
+    $("#idList").html(idList.join("&nbsp&nbsp"));
+    var socket=io.connect(location.protocol+"//"+document.domain+":"+location.port+"/share", {path:"/share/socket.io"});
+
+    joinroom = (data)=>{
+
+    };
+    createroom = ()=>{
+        id = $("#roomid").val();
+        uname = $("#uname").val();
+        if(id && name){
+            socket.emit("create", {"id": id, "name": uname});
+            socket.on("result", (data)=>{
+            idList.push(data.id);
+            console.log(idList)
+            });
+        }else{
+            layer.msg("请填写所有参数")
+        }
+
+
+    }
+</script>
+</body>
+</html>
