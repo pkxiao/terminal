@@ -10,7 +10,7 @@ from paramiko import channel
 
 app = Flask(__name__)
 app.secret_key = "hello"
-app.config.update(HOST="192.168.112.131")
+app.config.update(HOST="192.168.112.131", PASSWORD="xiao", USER="xiaobin")
 socket = SocketIO(app, path="/share/socket.io")
 
 connect = None
@@ -23,11 +23,6 @@ def socket_con():
     return render_template("index.html")
 
 
-@app.route("/terminal")
-def terminal_con():
-    return render_template("terminal.html")
-
-
 def send_num():
     while True:
         socket.sleep(1)
@@ -36,8 +31,6 @@ def send_num():
             socket.emit("result", str(num), namespace="/share")
         else:
             break
-        # num = random.randint(0, 9)
-        # socket.emit("result", str(num), namespace="/share")
 
 
 class NamespaceHandler(Namespace):
@@ -85,7 +78,8 @@ class TerminalHandler(Namespace):
         client = paramiko.SSHClient()
         try:
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            client.connect(hostname=app.config.get("HOST"), port=22, username="xiaobin", password='xiao')
+            client.connect(hostname=app.config.get("HOST"), port=22, username=app.config.get("USER"),
+                           password=app.config.get("PASSWORD"))
             chan = client.invoke_shell("vt100")  # type: channel.Channel
             chan.settimeout(0)
             sid = request.sid
