@@ -1,8 +1,11 @@
 import random
-import json
+import os
+import traceback
+import time
+import sys
 
-from flask_socketio import SocketIO, Namespace, emit, join_room, leave_room, close_room
-from flask import Flask, render_template, request
+from flask_socketio import SocketIO, Namespace, emit
+from flask import Flask, render_template, request, jsonify, current_app
 import paramiko
 from paramiko import BadHostKeyException, AuthenticationException, SSHException
 from socket import error
@@ -10,17 +13,57 @@ from paramiko import channel
 
 app = Flask(__name__)
 app.secret_key = "hello"
-app.config.update(HOST="192.168.112.131", PASSWORD="xiao", USER="xiaobin")
+app.config.update(HOST="192.168.112.132", PASSWORD="xiao", USER="xiaobin")
 socket = SocketIO(app, path="/share/socket.io")
 
 connect = None
 chan_active_dict = {}
 client_dict = {}
+init_path = "c:" if sys.platform == "win32" else "/"
 
 
 @app.route("/", methods=["GET"])
 def socket_con():
     return render_template("index.html")
+
+
+@app.route("/file/list", methods=["GET"])
+def file_list():
+    filename = request.args.get("filename", init_path).strip()
+    if not os.path.exists(filename):
+        return jsonify(code=3, msg=f"{filename}目录不存在")
+    dir_list = os.listdir(filename)
+    dir_length = len(dir_list)
+    if dir_length <= 0:
+        return jsonify(code=0, msg=[])
+    try:
+        page = int(request.args.get("page", "1").strip())
+        page_size = int(request.args.get("per_page", "10").strip())
+        dir_list.sort(key=lambda x: os.path.getmtime(os.path.join(filename, x)), reverse=True)
+        if page_size * page <= dir_length:
+            current_list = dir_list[(page - 1) * page_size:page * page_size]
+        else:
+            current_list = dir_list[(page - 1) * page_size:]
+    except Exception as ex:
+        current_app.logger.error(f"{filename}分页查询失败:\n{traceback.format_exc()}")
+        return jsonify(code=3, msg=str(ex))
+    d_list, f_list = [], []
+    for file in current_list:
+        file_path = os.path.join(filename, file)
+        item = {
+            "name": file,
+            "path": file_path,
+            "size": str(os.path.getsize(file_path)//1024) + "k",
+            "mtime": time.strftime("%y-%m-%d %H:%M:%S", time.localtime(os.path.getmtime(file_path))),
+            "ctime": time.strftime("%y-%m-%d %H:%M:%S", time.localtime(os.path.getctime(file_path))),
+            "type": "file",
+        }
+        if os.path.isdir(file_path):
+            item.update(type="dir")
+            d_list.append(item)
+        else:
+            f_list.append(item)
+    return jsonify(code=0, results=(d_list+f_list), total=dir_length, msg="")
 
 
 def send_num():
@@ -152,7 +195,4 @@ socket.on_namespace(NamespaceHandler("/share"))
 socket.on_namespace(TerminalHandler("/terminal"))
 
 if __name__ == '__main__':
-    print(app.static_folder)
     socket.run(app, host="127.0.0.1", port=9999, debug=True)
-
-
