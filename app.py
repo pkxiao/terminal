@@ -2,7 +2,7 @@ import random
 import os
 import traceback
 import time
-import sys
+import platform
 
 from flask_socketio import SocketIO, Namespace, emit
 from flask import Flask, render_template, request, jsonify, current_app
@@ -19,7 +19,9 @@ socket = SocketIO(app, path="/share/socket.io")
 connect = None
 chan_active_dict = {}
 client_dict = {}
-init_path = "c:" if sys.platform == "win32" else "/"
+sep = os.sep
+
+init_path = f"c:{sep}" if platform.system() == "Windows" else sep
 
 
 @app.route("/", methods=["GET"])
@@ -29,7 +31,7 @@ def socket_con():
 
 @app.route("/file/list", methods=["GET"])
 def file_list():
-    filename = request.args.get("filename", init_path).strip()
+    filename = request.args.get("path", init_path).strip()
     if not os.path.exists(filename):
         return jsonify(code=3, msg=f"{filename}目录不存在")
     dir_list = os.listdir(filename)
@@ -63,7 +65,7 @@ def file_list():
             d_list.append(item)
         else:
             f_list.append(item)
-    return jsonify(code=0, results=(d_list+f_list), total=dir_length, msg="")
+    return jsonify(code=0, results=(d_list+f_list), total=dir_length, path=filename,  msg="")
 
 
 def send_num():
