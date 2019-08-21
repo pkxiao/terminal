@@ -28,7 +28,8 @@
             overflow: hidden;
 
         }
-        .noclick{
+
+        .noclick {
             pointer-events: none;
             color: darkgray;
         }
@@ -49,11 +50,13 @@
             text-decoration: none;
             color: black;
         }
-        span{
+
+        span {
             display: block;
             margin-right: 40px;
             float: left;
         }
+
         a:hover {
             color: red;
         }
@@ -62,36 +65,42 @@
     <script type="text/javascript">
         $(document).ready(function () {
             let cur_page = 1;
-            let per_page = parseInt($(window).height() / 40);
+            let per_page = parseInt($(window).height() /40);
             let total_page = 1;
-            let current_path="";
+            var current_path = "";
+
             function getfile(path, page) {
                 $.ajax({
-                    url: "/file/list?" +"path="+ path + "&page=" + page + "&per_page=" + per_page,
+                    url: "/file/list?" + "path=" + path + "&page=" + page + "&per_page=" + per_page,
                     dataType: "json",
                     type: "get",
                     contentType: "application/json",
                     success: function (data) {
+                        //console.log(data);
                         //document.getElementById("head").nextElementSibling.remove();
-                        current_path = data.path;
-                        $("#head").nextAll().remove();
-                        let ele = "";
-                        total_page = parseInt(data.total / per_page) + 1;
-                        $.each(data.results, function (t, e) {
-                            ele = ele + getele(e)
-                        });
-                        $("#title").html("总共" + data.total + "个文件");
-                        $("#path").html("当前目录: " + current_path);
-                        $("#files").append(ele);
-                        if (cur_page >= total_page){
-                            $("#end").addClass("noclick")
+                        if (data.code === 0) {
+                            current_path = data.path;
+                            $("#head").nextAll().remove();
+                            let ele = "";
+                            total_page = Math.ceil(data.total / per_page);
+                            $.each(data.results, function (t, e) {
+                                ele = ele + getele(e)
+                            });
+                            $("#title").html("总共" + data.total + "个文件");
+                            $("#path").html("当前目录: " + current_path);
+                            $("#files").append(ele);
+                            if (cur_page >= total_page) {
+                                $("#end").addClass("noclick")
+                            } else {
+                                $("#end").removeClass("noclick")
+                            }
+                            if (cur_page > 1) {
+                                $("#start").removeClass("noclick")
+                            } else {
+                                $("#start").addClass("noclick")
+                            }
                         }else{
-                            $("#end").removeClass("noclick")
-                        }
-                        if (cur_page > 1){
-                            $("#start").removeClass("noclick")
-                        }else{
-                            $("#start").addClass("noclick")
+                            alert(data.msg)
                         }
 
                     },
@@ -100,6 +109,7 @@
                     }
                 })
             }
+
             function getele(e) {
                 var elementStr = "<tr class=\"cows\" id=\"" + e.path + "\"><td><input type=\"checkbox\" style=\"float:left\"><a href=\"JavaScript:void(0)\" onclick=\"getfiles()\">" + e.name + "</a></td>" +
                     "<td>" + e.size + "</td>" +
@@ -113,22 +123,21 @@
                 }
                 return elementStr + "</tr>";
             }
+
             getfile("c:", cur_page);
-            next_page = ()=>{
+            next_page = () => {
                 cur_page = cur_page + 1;
                 getfile(current_path, cur_page)
             };
-            previous_page = ()=>{
+            previous_page = () => {
                 cur_page = cur_page - 1;
                 getfile(current_path, cur_page)
             };
-            getfiles=()=>{
-               $(document).click(function (e) {
-                   current_path = $(e.target).parent().parent().attr("id");
-                   cur_page = 1;
-                   getfile(current_path, cur_page)
-               })
-            }
+            getfiles = () => {
+                current_path = event.srcElement.parentElement.parentElement.id;
+                cur_page = 1;
+                getfile(current_path, cur_page)
+            };
         })
     </script>
 </head>

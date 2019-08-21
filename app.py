@@ -34,6 +34,8 @@ def file_list():
     filename = request.args.get("path", init_path).strip()
     if not os.path.exists(filename):
         return jsonify(code=3, msg=f"{filename}目录不存在")
+    if not os.path.isdir(filename):
+        return jsonify(code=3, msg=f"{filename}是个文件")
     dir_list = os.listdir(filename)
     dir_length = len(dir_list)
     if dir_length <= 0:
