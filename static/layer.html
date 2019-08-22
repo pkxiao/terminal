@@ -12,6 +12,11 @@
             background-color: green;
         }
 
+        p {
+            width: 100%;
+            height: 30px;
+        }
+
         .cows {
             height: 30px;
             background: blanchedalmond;
@@ -61,14 +66,18 @@
             color: red;
         }
 
+        #paging {
+            text-align: right;
+        }
+
     </style>
     <script type="text/javascript">
         $(document).ready(function () {
             let cur_page = 1;
-            let per_page = parseInt($(window).height() /40);
+            let per_page = parseInt($(window).height()*0.8/30 - 1);
             let total_page = 1;
-            var current_path = "";
-
+            let current_path = "";
+            let sep = "\\";
             function getfile(path, page) {
                 $.ajax({
                     url: "/file/list?" + "path=" + path + "&page=" + page + "&per_page=" + per_page,
@@ -80,6 +89,7 @@
                         //document.getElementById("head").nextElementSibling.remove();
                         if (data.code === 0) {
                             current_path = data.path;
+                            sep = data.sep;
                             $("#head").nextAll().remove();
                             let ele = "";
                             total_page = Math.ceil(data.total / per_page);
@@ -99,8 +109,8 @@
                             } else {
                                 $("#start").addClass("noclick")
                             }
-                        }else{
-                            alert(data.msg)
+                        } else {
+                            layer.alert(data.msg)
                         }
 
                     },
@@ -138,13 +148,26 @@
                 cur_page = 1;
                 getfile(current_path, cur_page)
             };
+            goback = ()=>{
+                if(current_path.split(sep).length > 1){
+                    current_path = current_path.split(sep).slice(0, -1).join(sep);
+                    cur_page = 1;
+                    getfile(current_path, cur_page)
+                }else if(current_path.split(sep).length <= 1 && current_path.split(":").length === 2){
+                    current_path = current_path.split(":").slice(0, -1).join(":") + ":";
+                    cur_page = 1;
+                    getfile(current_path, cur_page)
+                }
+            }
         })
     </script>
 </head>
 <body>
 <div>
     <div style="width: 100%; height: 80%">
-        <p><span id="title"></span><span id="path" style=""></span></p>
+        <p><span id="title"></span><span id="path" style=""></span><a href="javascript:void(0)"
+                                                                      style="float: right; margin-right: 40px;" onclick="goback()">返回上一目录</a>
+        </p>
         <table style="width: 100%;" border=0 cellspacing=1 cellpadding=0 id="files">
             <tr class="head" id="head">
                 <th style="width: 300px">文件名</th>
@@ -155,9 +178,11 @@
             </tr>
         </table>
     </div>
-    <div id="paging" style="position: fixed; right: 100px; bottom: 40px;">
-        <a href="javascript:void(0)" id="start" onclick="previous_page()"> 上一页<< </a>
-        <a href="javascript:void(0)" id="end" onclick="next_page()"> >>下一页 </a>
+    <div id="paging" style="width: 100%; height: 30px">
+        <div style="margin-right: 10px; margin-top: 10px;">
+            <a href="javascript:void(0)" id="start" onclick="previous_page()"> 上一页<< </a>
+            <a href="javascript:void(0)" id="end" onclick="next_page()"> >>下一页 </a>
+        </div>
     </div>
 </div>
 </body>

@@ -39,7 +39,7 @@ def file_list():
     dir_list = os.listdir(filename)
     dir_length = len(dir_list)
     if dir_length <= 0:
-        return jsonify(code=0, msg=[])
+        return jsonify(code=0, results=[], total=dir_length, path=filename, sep=sep, msg="")
     try:
         page = int(request.args.get("page", "1").strip())
         page_size = int(request.args.get("per_page", "10").strip())
@@ -67,7 +67,7 @@ def file_list():
             d_list.append(item)
         else:
             f_list.append(item)
-    return jsonify(code=0, results=(d_list+f_list), total=dir_length, path=filename,  msg="")
+    return jsonify(code=0, results=(d_list+f_list), total=dir_length, path=filename, sep=sep, msg="")
 
 
 def send_num():
