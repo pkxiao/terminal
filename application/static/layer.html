@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>文件管理</title>
-    <link rel="shortcut icon" type="image/x-icon" href="../static/icon/fvaicon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="con.ico">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/layer/2.3/layer.js"></script>
     <style>
@@ -78,6 +78,7 @@
             let total_page = 1;
             let current_path = "";
             let sep = "\\";
+            let page = 1;
             function getfile(path, page) {
                 $.ajax({
                     url: "/file/list?" + "path=" + path + "&page=" + page + "&per_page=" + per_page,
@@ -134,7 +135,50 @@
                 return elementStr + "</tr>";
             }
 
-            getfile("c:", cur_page);
+            function getdata(filename, page){
+                page_size = "2048";
+                $.ajax({
+                    url:"/file/visit?path="+ filename + "&page="+page + "&size=" + page_size,
+                    dataType: "json",
+                    contentType: "application/json",
+                    success:(data)=>{
+                        total = Math.ceil(data.results.total/page_size);
+                        if(data.code===0){
+                            layer.open({
+                                title: filename,
+                                type:1,
+                                area:["1000px", "500px"],
+                                btn:["下载", "上一页", "下一页"],
+                                content:data.results.data,
+                                yes:function (index, layero) {
+                                    down()
+                                },btn2: function (index, layero) {
+                                    if (page === 1){
+                                        layer.msg("已经最前");
+                                        return false
+                                    }else{
+                                        page = page - 1;
+                                        getdata(filename, page)
+                                    }
+                                },btn3: function (index, layero) {
+                                    if (page>=total){
+                                        layer.msg("已经最后");
+                                        return false
+                                    }else{
+                                        page = page + 1;
+                                        getdata(filename, page)
+
+                                    }
+                                }
+                            })
+                        }else{
+                            layer.msg(data.msg)
+                        }
+                    }
+                })
+            }
+
+            getfile("f:", cur_page);
             next_page = () => {
                 cur_page = cur_page + 1;
                 getfile(current_path, cur_page)
@@ -158,6 +202,14 @@
                     cur_page = 1;
                     getfile(current_path, cur_page)
                 }
+            };
+            visit = ()=>{
+                filename = event.srcElement.parentElement.parentElement.id;
+                getdata(filename, page)
+
+            };
+            down=()=>{
+
             }
         })
     </script>
